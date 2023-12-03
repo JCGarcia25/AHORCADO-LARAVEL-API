@@ -1,0 +1,74 @@
+version: "3.8"
+services:
+  app:
+    build:
+      args:
+        user: johan
+        uid: 1000
+      context: ./
+      dockerfile: Dockerfile
+    image: ahorcado
+    container_name: ahorcado-app
+    restart: unless-stopped
+    working_dir: /var/www/
+    ports:
+      - 6001:6001
+    environment:
+      POSTGRES_USER: johan
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: ahorcado
+    volumes:
+      - ./:/var/www
+    networks:
+      - ahorcado
+    user: root
+
+  nginx:
+    image: nginx:alpine
+    container_name: ahorcado-nginx
+    restart: unless-stopped
+    ports:
+      - 81:80
+    volumes:
+      - ./:/var/www
+      - ./docker-compose/nginx:/etc/nginx/conf.d/
+    networks:
+      - ahorcado
+
+  postgres:
+    image: postgres:14.2
+    restart: always
+    container_name: postgres
+    ports:
+      - "9001:5432"
+    environment:
+      POSTGRES_USER: johan
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: ahorcado
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ahorcado
+
+  pgadmin:
+    image: neimheadh/phppgadmin:7.13.0
+    container_name: phppgadmin
+    ports:
+      - "9002:80"
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: johan
+      POSTGRES_PASS: root
+    depends_on:
+      - postgres
+    networks:
+      - ahorcado
+
+volumes:
+  postgres_data:
+  pgadmin_data:
+
+networks:
+  ahorcado:
+    driver: bridge
