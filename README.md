@@ -1,66 +1,72 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Repositorio hecho en Laravel - AHORCADO
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Su funcionamiento base es enfocado a microservidor servidos como API REST, este repositorio está enfocado al uso de contenedores
+y para hacer uso del mismo debes tener instalado en tu maquina la herramienta DOCKER, en mi caso Docker version 24.0.7.
 
-## About Laravel
+Para hacer uso del mismo debes seguir los siguientes pasos; Estando parado sobre el directorio que contiene este repositorio ejecutar:
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+1. docker compose buid
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+2. docker compose up -d
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+3. docker exec -it ahorcado-app bash
 
-## Learning Laravel
+## El comando anterior debió haberte puesto dentro del contendor de la app
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+4. cp .env.example .env
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+5. composer install
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+6. composer update
 
-## Laravel Sponsors
+7. php artisan key:generate
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+8. php artisan storage:link
 
-### Premium Partners
+9. php artisan migrate
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+10. chmod 777 -R storage
 
-## Contributing
+11. exit
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Con todo lo anteior ejecutado será suficiente para poder realizar peticiones vía CURL a nuestra aplicación.
 
-## Code of Conduct
+En caso de querer probar la puesta en marcha de nuestra app, podemos acceder en nuestro navegador a http://localhost:81/
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Pasos para jugar ahorcado
 
-## Security Vulnerabilities
+El juego consiste de 4 microservicios: iniciarJuego, inscribirse, empezarJuego, jugar.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Cada uno de los anteriores deben ejecutarse en ese orden, el fin de estos es, preparar el juego, inscribir jugadores, una vez estén todos, o se ocupe
+la cantidad máxima de estos, empezará el juego, y por ultimo, jugar en orden de turnos
 
-## License
+#### Microsercicio para pregarar el juego
+1. GET http://localhost:81/api/iniciarJuego
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+#### Microsercicio para inscribir cada jugador
+2. POST http://localhost:81/api/inscribirse
+
+    Body:
+    {
+        "nombre": "jack"
+    }
+
+#### Microsercicio para inscribir cada jugador
+3. GET http://localhost:81/api/empezarJuego    ->  Tener en cuenta que no es necesario ejecutar este si ya se alcanzó la cantidad máxima de jugadores
+
+### Microservicio para jugar
+4. POST http://localhost:81/api/jugar/{id}
+
+    Body:
+    {
+    "letra": "H"
+    }
+
+## Tener en cuenta
+Para jugar, en el espacio que dice "id", debe ir el id entregado por el sistema al inscribirse en el juego. En el body tenemos 2 opciones de juego:
+
+1. Jugar una letra: En este caso se evaluará si la letra existe en la palabra secreta
+
+2. Jugar una palabra: esta es una única oportunidad donde se comparará con la palabra secreta, es ganar o perder
+
+3. PALABRA_SECRETA y CANTIDAD_MAXIMA_JUGADORES estám definidas dentro del archivo de variables de entorno
